@@ -5,7 +5,7 @@
 #include "utils/debug.hpp"
 
 int main(int argc, char *argv[]) {
-    LOG_DEBUG("starting server ...");
+    LOG_DEBUG("Starting server ...");
 
     return 0;
 }

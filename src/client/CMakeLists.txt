@@ -13,6 +13,7 @@ set(CLIENT_SRC
 
 set(UTILS_SRC
     ../utils/debug.hpp                  ../utils/debug.cpp
+    ../utils/utils.hpp                  ../utils/utils.cpp
 )
 
 set(EVENT_SRC
@@ -21,6 +22,9 @@ set(EVENT_SRC
 )
 
 add_executable(${PROJECT_NAME} ${CLIENT_SRC} ${UTILS_SRC} ${EVENT_SRC})
+
+# For std::thread
+target_link_libraries(${PROJECT_NAME} pthread)
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../bin"

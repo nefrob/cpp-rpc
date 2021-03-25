@@ -13,6 +13,7 @@ set(SERVER_SRC
 
 set(UTILS_SRC
     ../utils/debug.hpp                  ../utils/debug.cpp
+    ../utils/utils.hpp                  ../utils/utils.cpp
 )
 
 set(EVENT_SRC
