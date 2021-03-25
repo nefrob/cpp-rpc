@@ -1,0 +1,8 @@
+# Executables
+bin/*
+
+# CMake build directory
+build/*
+
+# Editor settings 
+.vscode/*
