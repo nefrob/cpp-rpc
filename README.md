@@ -2,7 +2,7 @@
 
 C++ Linux event-based RPC client and server.
 
-Project is currently **WIP**!.
+Project is currently **WIP**!
 
 ### Dependencies
 
@@ -17,7 +17,7 @@ sudo apt install build-essential
 git clone https://github.com/nefrob/cpp-rpc
 cd cpp-rpc
 mkdir build && cd build
-cmake ..
+cmake .. && make
 cd ../bin
 ./server -TODO: args
 ./client -TODO: args
