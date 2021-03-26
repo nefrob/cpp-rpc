@@ -7,6 +7,7 @@
 #pragma once
 #include <mutex>
 #include <thread>
+#include <unordered_set>
 #include "event/event.hpp"
 
 /** 
@@ -24,23 +25,23 @@ class EventLoop {
          */
         ~EventLoop();
 
-        // TODO: event add, mod, delete
-
         /**
          * Stops event loop running.
          */
         void stop();
 
         /**
-         * Registers event with epoll and event loop. 
+         * Registers event with epoll and stores pointer in event loop.
          * 
-         * @param event: event being registered.
+         * @param event: event being registered. Should be allocated with
+         *     "new" as event loop takes ownership.
          * @param events: epoll events flags to register with.
          */
         void addEvent(Event *event, uint32_t events);
 
         /**
-         * Deregisters event from epoll and event loop.
+         * Deregisters event from epoll and deletes pointer from the
+         * event loop.
          * 
          * @param event: event being deregistered.
          */
@@ -56,7 +57,7 @@ class EventLoop {
         void updateEvent(Event *event, uint32_t events);
 
     private:
-        /* Starts the event loop looping / waiting on events. */
+        /* Starts the event loop waiting on events. */
         void run();
 
         /* Maximum epoll_wait event array length. */
@@ -65,7 +66,8 @@ class EventLoop {
         /* Epoll file descriptor. */
         int epollfd_;
 
-        // TODO: hash set/map of registered events
+        /* Events managed by event loop. */
+        std::unordered_set<Event *> handled_events;
 
         /* Thread event loop runs on. */
         std::thread loop_thread_;

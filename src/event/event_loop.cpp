@@ -62,7 +62,10 @@ void EventLoop::stop() {
 void EventLoop::addEvent(Event *event, uint32_t events) {
     assert(event != nullptr);
 
-    // TODO: event already registered?
+    if (handled_events.find(event) != handled_events.end()) {
+        LOG_WARN("Event already registered for fd %d", event->fd());
+        return;
+    }
 
     LOG_DEBUG("Registering event for fd %d", event->fd());
 
@@ -70,19 +73,21 @@ void EventLoop::addEvent(Event *event, uint32_t events) {
     poll_event.data.fd = event->fd();
     poll_event.data.ptr = event;
     poll_event.events = events;
-    if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, event->fd(), 
-            &poll_event) == -1) {
+    if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, event->fd(), &poll_event) == -1) {
         PANIC("epoll_ctl failed to add fd %d: %s", 
             event->fd(), strerror(errno));
     }
 
-    // TODO: add to internal registration?
+    handled_events.insert(event);
 }
 
 void EventLoop::removeEvent(Event *event) {
     assert(event != nullptr);
 
-    // TODO: check if event is registered
+    if (handled_events.find(event) == handled_events.end()) {
+        LOG_WARN("Event not registered for fd %d", event->fd());
+        return;
+    }
 
     LOG_DEBUG("Deregistering event for fd %d", event->fd());
 
@@ -91,13 +96,16 @@ void EventLoop::removeEvent(Event *event) {
             event->fd(), strerror(errno));
     }
 
-    // TODO: remove from internal registration
+    handled_events.erase(event);
 }
 
 void EventLoop::updateEvent(Event *event, uint32_t events) {
     assert(event != nullptr);
 
-    // TODO: event already registered?
+    if (handled_events.find(event) == handled_events.end()) {
+        LOG_WARN("Event not registered for fd %d", event->fd());
+        return;
+    }
 
     LOG_DEBUG("Modifying event for fd %d", event->fd());
 
@@ -109,8 +117,6 @@ void EventLoop::updateEvent(Event *event, uint32_t events) {
         PANIC("epoll_ctl failed to modify fd %d: %s", 
             event->fd(), strerror(errno));
     }
-    
-    // TODO: add to internal registration?
 }
 
 /* Creates new epoll file descriptor. */
