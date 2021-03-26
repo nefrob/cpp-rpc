@@ -31,6 +31,30 @@ class EventLoop {
          */
         void stop();
 
+        /**
+         * Registers event with epoll and event loop. 
+         * 
+         * @param event: event being registered.
+         * @param events: epoll events flags to register with.
+         */
+        void addEvent(Event *event, uint32_t events);
+
+        /**
+         * Deregisters event from epoll and event loop.
+         * 
+         * @param event: event being deregistered.
+         */
+        void removeEvent(Event *event);
+
+        /**
+         * Re-registers event with epoll and event loop. Useful 
+         * when using EPOLLONESHOT flag.
+         * 
+         * @param event: event being registered.
+         * @param events: epoll events flags to reregister with.
+         */
+        void updateEvent(Event *event, uint32_t events);
+
     private:
         /* Starts the event loop looping / waiting on events. */
         void run();

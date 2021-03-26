@@ -31,6 +31,11 @@ class Event {
         ~Event();
 
         /**
+         * Event file descriptor.
+         */
+        int fd();
+
+        /**
          * Abstract method called when epoll_wait returns with event
          * on fd. Called from within event loop.
          * 

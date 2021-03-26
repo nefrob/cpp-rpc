@@ -15,3 +15,7 @@ Event::~Event() {
 
     if (close_on_destruct_) close_log_err(fd_);
 }
+
+int Event::fd() {
+    return fd_;
+}
