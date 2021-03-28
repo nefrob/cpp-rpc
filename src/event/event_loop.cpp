@@ -60,6 +60,7 @@ void EventLoop::stop() {
 }
 
 void EventLoop::addEvent(Event *event, uint32_t events) {
+    assert(inLoopThread());
     assert(event != nullptr);
 
     if (handled_events.find(event) != handled_events.end()) {
@@ -82,6 +83,7 @@ void EventLoop::addEvent(Event *event, uint32_t events) {
 }
 
 void EventLoop::removeEvent(Event *event) {
+    assert(inLoopThread());
     assert(event != nullptr);
 
     if (handled_events.find(event) == handled_events.end()) {
@@ -100,6 +102,7 @@ void EventLoop::removeEvent(Event *event) {
 }
 
 void EventLoop::updateEvent(Event *event, uint32_t events) {
+    assert(inLoopThread());
     assert(event != nullptr);
 
     if (handled_events.find(event) == handled_events.end()) {
@@ -117,6 +120,10 @@ void EventLoop::updateEvent(Event *event, uint32_t events) {
         PANIC("epoll_ctl failed to modify fd %d: %s", 
             event->fd(), strerror(errno));
     }
+}
+
+bool EventLoop::inLoopThread() {
+    return std::this_thread::get_id() == loop_thread_.get_id();
 }
 
 /* Creates new epoll file descriptor. */

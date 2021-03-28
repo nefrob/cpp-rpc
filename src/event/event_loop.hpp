@@ -60,6 +60,11 @@ class EventLoop {
         /* Starts the event loop waiting on events. */
         void run();
 
+        /**
+         * Returns whether the current thread is the loop thread.
+         */
+        bool inLoopThread();
+
         /* Maximum epoll_wait event array length. */
         static const int EVENT_ARR_LEN = 16;
 
