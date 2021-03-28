@@ -124,7 +124,7 @@ void EventLoop::updateEvent(Event *event, uint32_t events) {
     }
 }
 
-void EventLoop::runInLoop(thunk thunk) {
+void EventLoop::runInLoop(Thunk thunk) {
     if (inLoopThread())
         thunk();
     else
@@ -135,7 +135,7 @@ bool EventLoop::inLoopThread() {
     return std::this_thread::get_id() == loop_thread_.get_id();
 }
 
-void EventLoop::queueInLoop(thunk thunk) {
+void EventLoop::queueInLoop(Thunk thunk) {
     lock_.lock();
     pending_thunks_.push(std::move(thunk));
 
@@ -146,7 +146,7 @@ void EventLoop::queueInLoop(thunk thunk) {
 
 void EventLoop::doPendingThunks() {
     lock_.lock();
-    std::queue<thunk> thunks;
+    std::queue<Thunk> thunks;
     thunks.swap(pending_thunks_);
     lock_.unlock();
 

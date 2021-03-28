@@ -19,6 +19,7 @@ set(UTILS_SRC
 set(EVENT_SRC
     ../event/event.hpp                  ../event/event.cpp
     ../event/event_loop.hpp             ../event/event_loop.cpp
+    ../event/timer.hpp                  ../event/timer.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SERVER_SRC} ${UTILS_SRC} ${EVENT_SRC})

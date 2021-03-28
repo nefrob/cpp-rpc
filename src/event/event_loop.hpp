@@ -20,7 +20,7 @@ class EventLoop {
         /**
          * Function to be executed within event loop.
          */
-        typedef std::function<void(void)> thunk;
+        typedef std::function<void(void)> Thunk;
 
         /**
          * Starts new event loop waiting on epoll file descriptor for events.
@@ -69,7 +69,7 @@ class EventLoop {
          * 
          * @param thunk: thunk to execute.
          */
-        void runInLoop(thunk thunk);
+        void runInLoop(Thunk thunk);
 
     private:
         /* Starts the event loop waiting on events. */
@@ -79,7 +79,7 @@ class EventLoop {
         bool inLoopThread();
 
         /* Queues a thunk to be executed in the event loop. */
-        void queueInLoop(thunk thunk);
+        void queueInLoop(Thunk thunk);
 
         /* Executes pending thunks in the event loop. */
         void doPendingThunks();
@@ -94,7 +94,7 @@ class EventLoop {
         std::unordered_set<Event *> handled_events;
 
         /* Pending functions to run within event loop. */
-        std::queue<thunk> pending_thunks_;
+        std::queue<Thunk> pending_thunks_;
 
         /* Thread event loop runs on. */
         std::thread loop_thread_;
