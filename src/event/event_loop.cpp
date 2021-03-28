@@ -39,6 +39,8 @@ void EventLoop::run() {
         for (int i = 0; i < n_events; i++) {
             ((Event *) events[i].data.ptr)->handle_event(events[i].events);
         }
+
+        doPendingThunks();
     }
 
     LOG_DEBUG("Exiting event loop");
@@ -122,8 +124,36 @@ void EventLoop::updateEvent(Event *event, uint32_t events) {
     }
 }
 
+void EventLoop::runInLoop(thunk thunk) {
+    if (inLoopThread())
+        thunk();
+    else
+        queueInLoop(std::move(thunk));
+}
+
 bool EventLoop::inLoopThread() {
     return std::this_thread::get_id() == loop_thread_.get_id();
+}
+
+void EventLoop::queueInLoop(thunk thunk) {
+    lock_.lock();
+    pending_thunks_.push(std::move(thunk));
+
+    // TODO: notify epollfd
+
+    lock_.unlock();
+}
+
+void EventLoop::doPendingThunks() {
+    lock_.lock();
+    std::queue<thunk> thunks;
+    thunks.swap(pending_thunks_);
+    lock_.unlock();
+
+    while (!thunks.empty()) {
+        thunks.front()();
+        thunks.pop();
+    }
 }
 
 /* Creates new epoll file descriptor. */

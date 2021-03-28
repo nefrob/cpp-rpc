@@ -8,6 +8,8 @@
 #include <mutex>
 #include <thread>
 #include <unordered_set>
+#include <queue>
+#include <functional>
 #include "event/event.hpp"
 
 /** 
@@ -15,6 +17,11 @@
  */
 class EventLoop {
     public:
+        /**
+         * Function to be executed within event loop.
+         */
+        typedef std::function<void(void)> thunk;
+
         /**
          * Starts new event loop waiting on epoll file descriptor for events.
          */
@@ -56,14 +63,26 @@ class EventLoop {
          */
         void updateEvent(Event *event, uint32_t events);
 
+        /**
+         * Runs provided thunk in event loop. If not currently
+         * in event loop then thunk is queued.
+         * 
+         * @param thunk: thunk to execute.
+         */
+        void runInLoop(thunk thunk);
+
     private:
         /* Starts the event loop waiting on events. */
         void run();
 
-        /**
-         * Returns whether the current thread is the loop thread.
-         */
+        /* Returns whether the current thread is the loop thread. */
         bool inLoopThread();
+
+        /* Queues a thunk to be executed in the event loop. */
+        void queueInLoop(thunk thunk);
+
+        /* Executes pending thunks in the event loop. */
+        void doPendingThunks();
 
         /* Maximum epoll_wait event array length. */
         static const int EVENT_ARR_LEN = 16;
@@ -73,6 +92,9 @@ class EventLoop {
 
         /* Events managed by event loop. */
         std::unordered_set<Event *> handled_events;
+
+        /* Pending functions to run within event loop. */
+        std::queue<thunk> pending_thunks_;
 
         /* Thread event loop runs on. */
         std::thread loop_thread_;

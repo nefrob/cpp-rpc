@@ -7,11 +7,11 @@ Event::Event(EventLoop& loop, int fd, uint32_t events,
     loop_(loop), fd_(fd), 
     close_on_destruct_(close_on_destruct) {
 
-    // TODO: register in event loop
+    // TODO: register in event loop?
 }
 
 Event::~Event() {
-    // TODO: deregister from event loop
+    // TODO: deregister from event loop?
 
     if (close_on_destruct_) close_log_err(fd_);
 }
