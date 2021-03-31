@@ -20,14 +20,15 @@ class Event {
          *
          * @param loop: loop that event is associated with.
          * @param fd: file descriptor to handle.
-         * @param events: event flags to manage.
          * @param close_on_destruct: whether file descriptor should be
          *     closed on Event deconstruct (else expected to be closed
          *     by caller).
          */
-        Event(EventLoop& loop, int fd, uint32_t events,
-            bool close_on_destruct = true);
+        Event(EventLoop& loop, int fd, bool close_on_destruct = true);
 
+        /**
+         * Closes file descriptor if specified.
+         */
         ~Event();
 
         /**
@@ -43,15 +44,18 @@ class Event {
          */
         virtual void handle_event(uint32_t events) = 0;
 
+    protected:
+        /**
+         * Epoll-based event loop that fd is registered with.
+         */
+        const EventLoop& loop_;
+
     private:
         /* File descriptor being monitored. */
         const int fd_;
         
         /* Whether fd is closed on class deconstruct. */
         bool close_on_destruct_;
-
-        /* Epoll-based event loop that fd is registered with. */
-        EventLoop& loop_;
 
         /* Set non-construction and assignment copyable. */
         Event(const Event&) = delete;

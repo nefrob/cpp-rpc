@@ -9,7 +9,7 @@ static int create_timerfd();
 
 Timer::Timer(EventLoop& loop, TimerCallback callback): 
     timer_callback_(callback),
-    Event(loop, create_timerfd(), EPOLLIN | EPOLLET) { }
+    Event(loop, create_timerfd()) { }
 
 Timer::~Timer() { } // handled by Event::~Event()
 

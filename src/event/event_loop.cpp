@@ -9,6 +9,10 @@ static int create_epollfd();
 EventLoop::EventLoop():
     epollfd_(create_epollfd()), exit_(false) {
 
+    std::unique_ptr<Timer> timer = std::make_unique<Timer>(*this, [](uint32_t) { });
+    wakeup_timer_ = timer.get(); // store reference for trigger access
+    epollAdd(std::move(timer), EPOLLIN | EPOLLET);
+
     loop_thread_ = std::thread([this]() { run(); });
 }
 
@@ -44,6 +48,8 @@ void EventLoop::run() {
     }
 
     LOG_DEBUG("Exiting event loop");
+
+    removeEvent((Event *) &wakeup_timer_);
 }
 
 void EventLoop::stop() {
@@ -61,11 +67,58 @@ void EventLoop::stop() {
     close_log_err(epollfd_);
 }
 
-void EventLoop::addEvent(Event *event, uint32_t events) {
-    assert(inLoopThread());
+void EventLoop::addEvent(std::unique_ptr<Event> event, uint32_t events) {
     assert(event != nullptr);
 
-    if (handled_events.find(event) != handled_events.end()) {
+    // Ref: https://stackoverflow.com/questions/56940199/how-to-capture-a-unique-ptr-in-a-stdfunction
+    auto temp = std::make_shared<std::unique_ptr<Event>>(std::move(event));
+    runInLoop([this, temp, events]() { epollAdd(std::move(*temp), events); });
+}
+
+void EventLoop::removeEvent(Event *event) {
+    assert(event != nullptr);
+    runInLoop(std::bind(&EventLoop::epollDel, this, event));
+}
+
+void EventLoop::updateEvent(Event *event, uint32_t events) {
+    assert(event != nullptr);
+    runInLoop(std::bind(&EventLoop::epollMod, this, event, events));
+}
+
+bool EventLoop::inLoopThread() {
+    return std::this_thread::get_id() == loop_thread_.get_id();
+}
+
+void EventLoop::runInLoop(Thunk thunk) {
+    if (inLoopThread()) {
+        thunk();
+    } else {
+        lock_.lock();
+        pending_thunks_.push(std::move(thunk));
+
+        wakeup_timer_->schedule(0);
+        lock_.unlock();
+    }
+}
+
+void EventLoop::doPendingThunks() {
+    assert(inLoopThread());
+
+    lock_.lock();
+    std::queue<Thunk> thunks;
+    thunks.swap(pending_thunks_);
+    lock_.unlock();
+
+    while (!thunks.empty()) {
+        thunks.front()();
+        thunks.pop();
+    }
+}
+
+void EventLoop::epollAdd(std::unique_ptr<Event> event, uint32_t events) {
+    assert(event != nullptr);
+
+    if (handled_events.find(event->fd()) != handled_events.end()) {
         LOG_WARN("Event already registered for fd %d", event->fd());
         return;
     }
@@ -74,21 +127,20 @@ void EventLoop::addEvent(Event *event, uint32_t events) {
 
     struct epoll_event poll_event = {0};
     poll_event.data.fd = event->fd();
-    poll_event.data.ptr = event;
+    poll_event.data.ptr = event.get();
     poll_event.events = events;
     if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, event->fd(), &poll_event) == -1) {
         PANIC("epoll_ctl failed to add fd %d: %s", 
             event->fd(), strerror(errno));
     }
 
-    handled_events.insert(event);
+    handled_events.insert(std::make_pair(event->fd(), std::move(event)));
 }
 
-void EventLoop::removeEvent(Event *event) {
-    assert(inLoopThread());
+void EventLoop::epollDel(Event *event) {
     assert(event != nullptr);
 
-    if (handled_events.find(event) == handled_events.end()) {
+    if (handled_events.find(event->fd()) == handled_events.end()) {
         LOG_WARN("Event not registered for fd %d", event->fd());
         return;
     }
@@ -100,14 +152,13 @@ void EventLoop::removeEvent(Event *event) {
             event->fd(), strerror(errno));
     }
 
-    handled_events.erase(event);
+    handled_events.erase(event->fd());
 }
 
-void EventLoop::updateEvent(Event *event, uint32_t events) {
-    assert(inLoopThread());
+void EventLoop::epollMod(Event *event, uint32_t events) {
     assert(event != nullptr);
 
-    if (handled_events.find(event) == handled_events.end()) {
+    if (handled_events.find(event->fd()) == handled_events.end()) {
         LOG_WARN("Event not registered for fd %d", event->fd());
         return;
     }
@@ -121,38 +172,6 @@ void EventLoop::updateEvent(Event *event, uint32_t events) {
     if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, event->fd(), &poll_event) == -1) {
         PANIC("epoll_ctl failed to modify fd %d: %s", 
             event->fd(), strerror(errno));
-    }
-}
-
-void EventLoop::runInLoop(Thunk thunk) {
-    if (inLoopThread())
-        thunk();
-    else
-        queueInLoop(std::move(thunk));
-}
-
-bool EventLoop::inLoopThread() {
-    return std::this_thread::get_id() == loop_thread_.get_id();
-}
-
-void EventLoop::queueInLoop(Thunk thunk) {
-    lock_.lock();
-    pending_thunks_.push(std::move(thunk));
-
-    // TODO: notify epollfd
-
-    lock_.unlock();
-}
-
-void EventLoop::doPendingThunks() {
-    lock_.lock();
-    std::queue<Thunk> thunks;
-    thunks.swap(pending_thunks_);
-    lock_.unlock();
-
-    while (!thunks.empty()) {
-        thunks.front()();
-        thunks.pop();
     }
 }
 
