@@ -44,6 +44,12 @@ class Event {
          */
         virtual void handle_event(uint32_t events) = 0;
 
+        /**
+         * Abstract method called when event is deregistered from the
+         * event loop. Can be used to free event memory.
+         */
+        virtual void handle_deregister() = 0;
+
     protected:
         /**
          * Epoll-based event loop that fd is registered with.

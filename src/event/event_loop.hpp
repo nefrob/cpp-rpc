@@ -105,7 +105,7 @@ class EventLoop {
 
         /* Timer to force event loop thread wakeup 
            (for scheduling thunks or ensuring event loop exits). */
-        Timer wakeup_timer_;
+        Timer *wakeup_timer_;
 
         /* Thread event loop runs on. */
         std::thread loop_thread_;

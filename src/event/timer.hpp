@@ -58,6 +58,11 @@ class Timer: public Event {
          */
         void handle_event(uint32_t events);
 
+        /**
+         * Frees timer memory (assumes allocated with "new").
+         */
+        void handle_deregister();
+
     private:
         /* Nanoseconds in a second. */
         static const uint64_t NS_PER_SEC = 1000000000;

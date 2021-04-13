@@ -8,9 +8,9 @@ static int create_epollfd();
 
 EventLoop::EventLoop():
     epollfd_(create_epollfd()), exit_(false),
-    wakeup_timer_(*this, [](uint32_t) { }) {
+    wakeup_timer_(new Timer(*this, [](uint32_t) { })) {
 
-    epollAdd(&wakeup_timer_, EPOLLIN | EPOLLET);
+    epollAdd(wakeup_timer_, EPOLLIN | EPOLLET);
     loop_thread_ = std::thread([this]() { run(); });
 }
 
@@ -47,7 +47,7 @@ void EventLoop::run() {
 
     LOG_DEBUG("Exiting event loop");
 
-    removeEvent((Event *) &wakeup_timer_);
+    removeEvent((Event *) wakeup_timer_);
 }
 
 void EventLoop::stop() {
@@ -60,7 +60,7 @@ void EventLoop::stop() {
     LOG_DEBUG("Stopping event loop for epollfd %d", epollfd_);
     
     exit_ = true;
-    wakeup_timer_.schedule(0);
+    wakeup_timer_->schedule(0);
     lock_.unlock();
 
     loop_thread_.join();
@@ -93,7 +93,7 @@ void EventLoop::runInLoop(Thunk thunk) {
         lock_.lock();
         pending_thunks_.push(std::move(thunk));
 
-        wakeup_timer_.schedule(0);
+        wakeup_timer_->schedule(0);
         lock_.unlock();
     }
 }
@@ -150,6 +150,7 @@ void EventLoop::epollDel(Event *event) {
     }
 
     handled_events.erase(event);
+    event->handle_deregister();
 }
 
 void EventLoop::epollMod(Event *event, uint32_t events) {
