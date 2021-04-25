@@ -14,6 +14,7 @@ set(SERVER_SRC
 set(UTILS_SRC
     ../utils/debug.hpp                  ../utils/debug.cpp
     ../utils/utils.hpp                  ../utils/utils.cpp
+    ../utils/network_utils.hpp          ../utils/network_utils.cpp
 )
 
 set(EVENT_SRC
@@ -22,7 +23,12 @@ set(EVENT_SRC
     ../event/timer.hpp                  ../event/timer.cpp
 )
 
-add_executable(${PROJECT_NAME} ${SERVER_SRC} ${UTILS_SRC} ${EVENT_SRC})
+set(RPC_SRC
+    ../rpc/server_socket.hpp            ../rpc/server_socket.cpp
+    ../rpc/rpc_server.hpp               ../rpc/rpc_server.cpp 
+)
+
+add_executable(${PROJECT_NAME} ${SERVER_SRC} ${UTILS_SRC} ${EVENT_SRC} ${RPC_SRC})
 
 # For std::thread
 target_link_libraries(${PROJECT_NAME} pthread)

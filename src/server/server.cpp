@@ -9,7 +9,15 @@
 #include "event/timer.hpp"
 
 int main(int argc, char *argv[]) {
+    if (argc < 3) {
+        fprintf(stderr, "Server usage: %s ip port\n", argv[0]);
+        exit(1);
+    }
+
     LOG_DEBUG("Starting server ...");
+
+    std::string ip = std::string(argv[1]);
+    unsigned short port = atoi(argv[2]);
 
     EventLoop loop;
     Timer *timer = new Timer(loop, [](uint32_t) {
