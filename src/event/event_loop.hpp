@@ -35,6 +35,8 @@ class EventLoop {
 
         /**
          * Stops event loop running.
+         * 
+         * FIXME: deregister all events?
          */
         void stop();
 
