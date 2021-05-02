@@ -11,6 +11,8 @@
 /**
  * RPC server that handles incoming RPC requests, getting the
  * respective response and returning it to the client. 
+ * 
+ * TODO: not thread safe
  */
 class RpcServer {
     public: 
@@ -21,7 +23,7 @@ class RpcServer {
         RpcServer(uint16_t port, std::string ip);
   
         /**
-         * Closes connections ans stops server running.
+         * Closes connections and stops server running.
          */
         ~RpcServer();
 
@@ -39,4 +41,6 @@ class RpcServer {
 
         /* Server event loop for network events. */
         EventLoop loop_;
+
+        // TODO: some kind of rpc responder service
 };

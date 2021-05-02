@@ -1,5 +1,7 @@
+#include <sys/epoll.h>
 #include "rpc/rpc_server.hpp"
 #include "rpc/server_socket.hpp"
+#include "rpc/accept_event.hpp"
 #include "utils/utils.hpp"
 #include "utils/network_utils.hpp"
 
@@ -10,13 +12,10 @@ RpcServer::RpcServer(uint16_t port, std::string ip):
     if (listen_sock == SERVER_SOCK_ERROR) 
         PANIC("listen socket create failed");
 
-    // TODO: create accept socket
-    // Event *server_sock = new Event(loop, listen_sock);
-    // loop.addEvent(server_sock, ...);
+    Acceptor *server_sock = new Acceptor(loop_, listen_sock);
+    loop_.addEvent(server_sock, EPOLLIN);
 
     LOG_DEBUG("RPC server accepting on port: %hu", port);
-
-    // TODO: set running
 }
 
 RpcServer::~RpcServer() {
@@ -27,7 +26,9 @@ void RpcServer::stop_server() {
     LOG_DEBUG("RPC server %s:%hu shutting down ...",
         get_host_name().c_str(), port_);
 
-    loop_.stop();
+    // TODO: close acceptor socket?
 
-    // TODO:
+    // close all conns?
+
+    loop_.stop();
 }

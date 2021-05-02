@@ -54,7 +54,7 @@ class Event {
         /**
          * Epoll-based event loop that fd is registered with.
          */
-        const EventLoop& loop_;
+        EventLoop& loop_;
 
     private:
         /* File descriptor being monitored. */
