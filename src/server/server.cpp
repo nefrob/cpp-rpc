@@ -2,11 +2,9 @@
  * This server is for testing purposes only right now.
  */
 
-#include <sys/epoll.h>
 #include <iostream>
 #include "utils/debug.hpp"
-#include "event/event_loop.hpp"
-#include "event/timer.hpp"
+#include "utils/network_utils.hpp"
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
@@ -15,35 +13,40 @@ int main(int argc, char *argv[]) {
     }
 
     LOG_DEBUG("Starting server ...");
+    LOG_DEBUG("Server hostname is %s", get_host_name().c_str());
 
     std::string ip = std::string(argv[1]);
     unsigned short port = atoi(argv[2]);
 
-    EventLoop loop;
-    Timer *timer = new Timer(loop, [](uint32_t) {
-        LOG_DEBUG("Test timer triggered.");
-    });
+    // EventLoop loop;
+    // Timer *timer = new Timer(loop, [](uint32_t) {
+    //     LOG_DEBUG("Test timer triggered.");
+    // });
 
-    loop.addEvent(timer, EPOLLIN | EPOLLONESHOT);
+    // loop.addEvent(timer, EPOLLIN | EPOLLONESHOT);
 
     while (true) {
-        std::string request;
+        std::string input;
         printf("server >");
-        std::getline(std::cin, request);
+        std::getline(std::cin, input);
 
-        if (request == "s") {
-            loop.removeEvent(timer);
+        if (input == "s") {
             break;
-        } else if (request == "r") {
-            loop.updateEvent(timer, EPOLLIN | EPOLLONESHOT);
-            timer->schedule(2000000000); // schedule 2 second timer
-        } else if (request == "d") {
-            loop.removeEvent(timer);
         }
+
+        // if (request == "s") {
+        //     loop.removeEvent(timer);
+        //     break;
+        // } else if (request == "r") {
+        //     loop.updateEvent(timer, EPOLLIN | EPOLLONESHOT);
+        //     timer->schedule(2000000000); // schedule 2 second timer
+        // } else if (request == "d") {
+        //     loop.removeEvent(timer);
+        // }
     }
 
     LOG_DEBUG("Stopping server ...");
-    loop.stop();
+    // loop.stop();
 
     return 0;
 }
