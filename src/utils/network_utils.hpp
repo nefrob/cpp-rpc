@@ -65,9 +65,9 @@ ssize_t send_all(int sockfd, const void *buf, size_t len, int flags = 0);
 
 /**
  * Receive len bytes from socket file destrictor, 
- * storing them in buffer. Returns bytes received or
+ * storing them in buffer. Returns bytes received or 
  * zero if the connection was closed. Returns -1 
- * on error.
+ * on error. 
  * 
  * Note: may block waiting for data to arrive. Can be avoided
  * by using non-blocking MSG_DONTWAIT flag.

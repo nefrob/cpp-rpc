@@ -45,10 +45,10 @@ class Event {
         virtual void handle_event(uint32_t events) = 0;
 
         /**
-         * Abstract method called when event is deregistered from the
-         * event loop. Can be used to free event memory.
+         * Called right before event is deregistered from the event loop. 
+         * Should be overriden by derived class.
          */
-        virtual void handle_deregister() = 0;
+        void handleDeregister() { }
 
     protected:
         /**

@@ -13,12 +13,12 @@
  */
 struct message {
     /**
-     * Message data.
-     */
-    void *data;
-    
-    /**
      * Message length in bytes.
      */
     size_t len;
+    
+    /**
+     * Message data.
+     */
+    void *data;
 };

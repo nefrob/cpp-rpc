@@ -1,7 +1,7 @@
 #include <cstring>
 #include <netdb.h>
 #include <cassert>
-#include "rpc/client_socket.hpp"
+#include "client/client_socket.hpp"
 #include "utils/network_utils.hpp"
 #include "utils/utils.hpp"
 #include "utils/debug.hpp"

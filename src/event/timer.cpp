@@ -33,10 +33,6 @@ void Timer::handle_event(uint32_t events) {
     timer_callback_(events);
 }
 
-void Timer::handle_deregister() {
-    delete this;
-}
-
 /* Creates new non-blocking timer file descriptor. */
 static int create_timerfd() {
     int timerfd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
