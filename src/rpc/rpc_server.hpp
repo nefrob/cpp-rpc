@@ -7,6 +7,7 @@
 #pragma once
 #include <string>
 #include "event/event_loop.hpp"
+#include "rpc/rpc_responder.hpp"
 
 /**
  * RPC server that handles incoming RPC requests, getting the
@@ -30,7 +31,7 @@ class RpcServer {
         /**
          * Stops server running.
          */
-        void stop_server();
+        void stop();
 
     private:
         /* Server port to listen on. */
@@ -42,5 +43,9 @@ class RpcServer {
         /* Server event loop for network events. */
         EventLoop loop_;
 
+        /* */
+        bool running_;
+
         // TODO: some kind of rpc responder service
+        RpcResponder rpc_responder_;
 };

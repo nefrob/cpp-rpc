@@ -4,24 +4,33 @@
 #include "event/event_loop.hpp"
 #include "utils/network_utils.hpp"
 #include "utils/debug.hpp"
+#include "rpc/rpc_responder.hpp"
 
-Socket::Socket(EventLoop& loop, int sockfd): 
+Socket::Socket(EventLoop& loop, int sockfd, RpcResponder& responder): 
     Event(loop, sockfd),
-    send_msg(NULL), send_offset(0), recv_offset(0){
-    
-    recv_msg.data = NULL;
-    recv_msg.len = 0;
+    send_msg_(NULL), send_offset_(0), recv_offset_(0), recv_msg_(NULL),
+    responder_(responder) {
 }
 
 Socket::~Socket() {
     struct message *msg;
-    
-    while (pending_msgs.size() > 0) {
-        msg = pending_msgs.front();
+
+    if (send_msg_ != NULL) {
+        if (send_msg_->data != NULL) free(send_msg_->data);
+        free(send_msg_);
+    }
+
+    if (recv_msg_->data != NULL) {
+        if (recv_msg_->data != NULL) free(recv_msg_->data);
+        free(recv_msg_);
+    }
+
+    while (pending_msgs_.size() > 0) {
+        msg = pending_msgs_.front();
         free(msg->data);
         free(msg);
         
-        pending_msgs.pop();
+        pending_msgs_.pop();
     }
 }
 
@@ -38,10 +47,10 @@ void Socket::queue_message(const void *data, size_t len) {
     msg->len = len;
     memcpy(msg->data, data, msg->len);
 
-    // TODO: bind to run in event loop, add to internal
-    
-    pending_msgs.push(msg);
-    loop_.updateEvent(this, EPOLLOUT | EPOLLIN | EPOLLONESHOT);
+    loop_.runInLoop([this, msg]() {
+        pending_msgs_.push(msg);
+        loop_.updateEvent(this, EPOLLOUT | EPOLLIN | EPOLLONESHOT);
+    });
 }
 
 void Socket::handle_event(uint32_t events) {
@@ -50,109 +59,111 @@ void Socket::handle_event(uint32_t events) {
         return;
     }
     
-    if ((events & EPOLLIN) && !handle_readable()) {
+    if ((events & EPOLLIN) && !handleReadable()) {
         loop_.removeEvent(this);
         return;
     }
 
-    if ((events & EPOLLOUT) && !handle_writeable()) {
+    if ((events & EPOLLOUT) && !handleWriteable()) {
         loop_.removeEvent(this);
         return;
     }
     
     int flags = EPOLLIN | EPOLLONESHOT;
-    if (pending_msgs.size() > 0) flags |= EPOLLOUT;
+    if (pending_msgs_.size() > 0) flags |= EPOLLOUT;
     loop_.updateEvent(this, flags);
 }
 
-void Socket::handle_deregister() {
-    // TODO: nothing?
-}
-
-bool Socket::handle_readable() {
+bool Socket::handleReadable() {
     ssize_t ret;
 
     while (true) {
-        if (recv_offset < sizeof(size_t)) {
-            ret = recv_all(fd(), (uint8_t *) &(recv_msg.len) + recv_offset,
-                sizeof(size_t) - recv_offset, MSG_DONTWAIT);
+        if (recv_offset_ == 0) {
+            recv_msg_ = (struct message *) malloc(sizeof(struct message *));
+            if (recv_msg_->data == NULL) PANIC("malloc fail");
+
+            recv_msg_->data = NULL;
+        }
+
+        if (recv_offset_ < sizeof(size_t)) {
+            ret = recv_all(fd(), (uint8_t *) &(recv_msg_->len) + recv_offset_,
+                sizeof(size_t) - recv_offset_, MSG_DONTWAIT);
             
             if (ret < 0) {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) return true;
                 return false;
             } else if (ret == 0) return false;
 
-            recv_offset += ret;
-            if (recv_offset < sizeof(size_t)) break;
+            recv_offset_ += ret;
+            if (recv_offset_ < sizeof(recv_msg_->len)) break;
 
-            recv_msg.data = malloc(recv_msg.len);
-            if (recv_msg.data == NULL) PANIC("malloc fail");
+            recv_msg_->data = malloc(recv_msg_->len);
+            if (recv_msg_->data == NULL) PANIC("malloc fail");
         }
 
-        size_t msg_offset = recv_offset - sizeof(size_t);
-        ret =  recv_all(fd(), (uint8_t *) recv_msg.data + msg_offset,
-            recv_msg.len - msg_offset, MSG_DONTWAIT);
+        size_t msg_offset = recv_offset_ - sizeof(size_t);
+        ret =  recv_all(fd(), (uint8_t *) recv_msg_->data + msg_offset,
+            recv_msg_->len - msg_offset, MSG_DONTWAIT);
         
         if (ret < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) return true;
             return false;
         } else if (ret == 0) return false;
 
-        recv_offset += ret;
-        if (msg_offset + ret == recv_msg.len) {
+        recv_offset_ += ret;
+        if (msg_offset + ret == recv_msg_->len) {
             LOG_DEBUG("message received from %s", get_peer_ip(fd()).c_str());
 
-            // TODO: async queue and get rpc response since may need io
-            // likely need to provide with shared pointer reference from loop
-            // struct message *response = RpcGetter.(this, recv_msg); // frees message
+            responder_.scheduleRpcRequest(weak_from_this(), recv_msg_);
 
-            recv_offset = 0;
+            recv_offset_ = 0;
+            recv_msg_ = NULL;
         }
     }
 
     return true;
 }
 
-bool Socket::handle_writeable() {
+bool Socket::handleWriteable() {
     ssize_t ret;
 
     while (true) {
-        if (send_msg == NULL && !pending_msgs.empty()) {
-            send_msg = pending_msgs.front();
-            pending_msgs.pop();
+        if (send_msg_ == NULL && !pending_msgs_.empty()) {
+            send_msg_ = pending_msgs_.front();
+            pending_msgs_.pop();
         }
 
-        if (send_offset < sizeof(send_msg->len)) {
-            ret = send_all(fd(), (uint8_t *) &(send_msg->len) + send_offset,
-                sizeof(send_msg->len) - send_offset, MSG_DONTWAIT);
+        if (send_offset_ < sizeof(send_msg_->len)) {
+            ret = send_all(fd(), (uint8_t *) &(send_msg_->len) + send_offset_,
+                sizeof(send_msg_->len) - send_offset_, MSG_DONTWAIT);
             
             if (ret < 0) {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) return true;
                 return false;
             } else if (ret == 0) return false;
 
-            send_offset += ret;
+            send_offset_ += ret;
             
-            if (send_offset < sizeof(send_msg->len)) break;
+            if (send_offset_ < sizeof(send_msg_->len)) break;
         }
 
-        size_t msg_offset = send_offset - sizeof(send_msg->len);
-        ret = send_all(fd(), (uint8_t *) send_msg->data + msg_offset,
-            send_msg->len - msg_offset, MSG_DONTWAIT);
+        size_t msg_offset = send_offset_ - sizeof(send_msg_->len);
+        ret = send_all(fd(), (uint8_t *) send_msg_->data + msg_offset,
+            send_msg_->len - msg_offset, MSG_DONTWAIT);
         
         if (ret < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) return true;
             return false;
         } else if (ret == 0) return false;
 
-        send_offset += ret;
+        send_offset_ += ret;
         
-        if (msg_offset + ret == send_msg->len) {
-            LOG_DEBUG("message sent to peer");
+        if (msg_offset + ret == send_msg_->len) {
+            LOG_DEBUG("message sent to peer %s", get_peer_ip(fd()).c_str());
 
-            free(send_msg->data);
-            send_msg = NULL;
-            send_offset = 0;
+            free(send_msg_->data);
+            send_msg_ = NULL;
+            send_offset_ = 0;
         } else break;
     }
 

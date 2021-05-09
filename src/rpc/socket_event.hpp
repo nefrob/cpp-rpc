@@ -6,22 +6,27 @@
 
 #pragma once
 #include <stddef.h>
+#include <memory>
 #include <queue>
 #include "rpc/message.hpp"
 #include "event/event.hpp"
 
 /* Forward declarations (stop cyclic dependencies). */
 class EventLoop;
+class RpcResponder;
 
 /**
  * Network socket event loop event.
  */
-class Socket: private Event {
+class Socket: public Event, std::enable_shared_from_this<Socket> {
     public:
         /**
-         * EPOLLIN | EPOLLONESHOT)
+         * EPOLLIN | EPOLLONESHOT
+         * 
+         * @param loop:
+         * @param sockfd: 
          */
-        Socket(EventLoop& loop, int sockfd);
+        Socket(EventLoop& loop, int sockfd, RpcResponder& responder);
 
         /**
          * Deconstructor.
@@ -39,44 +44,36 @@ class Socket: private Event {
         /**
          * 
          *
-         * @param: epoll set event flags.
+         * @param events: epoll set event flags.
          */
         void handle_event(uint32_t events);
 
-        /**
-         * 
-         */
-        void handle_deregister();
-
     private:
-        /**
-         * Abstract method called by handle_event when epoll returns a 
-         * read event on sockfd. Executes within event loop.
-         */
-        // virtual bool handle_readable() = 0;
-        bool handle_readable();
+        /* Called by handleEvent when epoll returns a read event on sockfd. 
+           Executes within event loop. */
+        bool handleReadable();
 
-        /**
-         * Abstract method called by handle_event when epoll returns a 
-         * write event on sockfd. Executes within event loop.
-         */
-        // virtual bool handle_writeable() = 0;
-        bool handle_writeable();
+        /* Called by handleEvent when epoll returns a write event on sockfd. 
+           Executes within event loop. */
+        bool handleWriteable();
 
-        /* Queue of messages waiting to be sent on the socket. */
-        std::queue<struct message *> pending_msgs;
+        /* Queue of malloc'd messages waiting to be sent on the socket. */
+        std::queue<struct message *> pending_msgs_;
 
         /* Message currently being sent. */
-        struct message *send_msg;
+        struct message *send_msg_;
 
         /* Offset of already sent bytes into active send message. */
-        size_t send_offset;
+        size_t send_offset_;
 
         /* Message currently being received. */
-        struct message recv_msg;
+        struct message *recv_msg_;
 
         /* Offset of already received bytes into active receive message. */
-        size_t recv_offset;
+        size_t recv_offset_;
+
+        /* */
+        RpcResponder& responder_;
 
         /* Set non-construction and assignment copyable. */
         Socket(const Socket&) = delete;

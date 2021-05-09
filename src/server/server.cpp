@@ -5,6 +5,7 @@
 #include <iostream>
 #include "utils/debug.hpp"
 #include "utils/network_utils.hpp"
+#include "rpc/rpc_server.hpp"
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
@@ -18,12 +19,7 @@ int main(int argc, char *argv[]) {
     std::string ip = std::string(argv[1]);
     unsigned short port = atoi(argv[2]);
 
-    // EventLoop loop;
-    // Timer *timer = new Timer(loop, [](uint32_t) {
-    //     LOG_DEBUG("Test timer triggered.");
-    // });
-
-    // loop.addEvent(timer, EPOLLIN | EPOLLONESHOT);
+    RpcServer server(port, ip);
 
     while (true) {
         std::string input;
@@ -34,19 +30,10 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-        // if (request == "s") {
-        //     loop.removeEvent(timer);
-        //     break;
-        // } else if (request == "r") {
-        //     loop.updateEvent(timer, EPOLLIN | EPOLLONESHOT);
-        //     timer->schedule(2000000000); // schedule 2 second timer
-        // } else if (request == "d") {
-        //     loop.removeEvent(timer);
-        // }
     }
 
     LOG_DEBUG("Stopping server ...");
-    // loop.stop();
+    server.stop();
 
     return 0;
 }
