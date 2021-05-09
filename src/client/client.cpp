@@ -7,7 +7,8 @@
 #include "utils/debug.hpp"
 #include "utils/utils.hpp"
 #include "utils/network_utils.hpp"
-#include "rpc/client_socket.hpp"
+#include "rpc/message.hpp"
+#include "client/client_socket.hpp"
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
@@ -28,28 +29,32 @@ int main(int argc, char *argv[]) {
 
     while (true) {
         std::string request;
+        struct message msg;
+
         printf("client >");
         std::getline(std::cin, request);
 
         if (request == "s") {
-            // TODO: close connection
-            break;
-        }
-
-        // Send rpc request
-        assert(connection_alive(client_sock));
-        ssize_t n; // = send_rpc(request, client_sock);
-        assert(n == request.length());
-        
-        std::string response; // = recv_rpc(client_sock);
-        if (response == "") {
-            LOG_ERROR("rpc receive error");
-            shutdown(client_sock, SHUT_RDWR);
+            // shutdown(client_sock, SHUT_RDWR); // for error?
             close_log_err(client_sock);
             break;
         }
 
-        printf("response: %s", response);
+        assert(connection_alive(client_sock));
+
+        msg.len = request.length();
+        msg.data = (void *) request.c_str();
+        ssize_t n = send_all(client_sock, &msg, sizeof(msg.len) + msg.len);
+        assert(n == request.length());
+        
+        n = recv_all(client_sock, &msg.len, sizeof(msg.len));
+        assert(n == sizeof(msg.len));
+
+        uint8_t response[msg.len];
+        n = recv_all(client_sock, &response, msg.len);
+        assert(n == msg.len);
+
+        printf("response: %s", (char *) response);
     }
 
     LOG_DEBUG("Stopping client ...");
