@@ -42,14 +42,14 @@ int main(int argc, char *argv[]) {
 
         assert(connection_alive(client_sock));
 
-        msg.len = request.length();
+        msg.len = request.length() + 1;
         msg.data = (void *) request.c_str();
 
         ssize_t n = send_all(client_sock, &msg.len, sizeof(msg.len));
         assert(n == sizeof(msg.len));
         
         n = send_all(client_sock, msg.data, msg.len);
-        assert(n == request.length());
+        assert(n == msg.len);
         
         n = recv_all(client_sock, &msg.len, sizeof(msg.len));
         assert(n == sizeof(msg.len));

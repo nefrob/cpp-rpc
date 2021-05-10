@@ -132,7 +132,7 @@ bool Socket::handleWriteable() {
         if (send_msg_ == NULL && !pending_msgs_.empty()) {
             send_msg_ = pending_msgs_.front();
             pending_msgs_.pop();
-        }
+        } else break;
 
         if (send_offset_ < sizeof(send_msg_->len)) {
             ret = send_all(fd(), (uint8_t *) &(send_msg_->len) + send_offset_,
