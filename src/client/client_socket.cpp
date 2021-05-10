@@ -50,7 +50,7 @@ int create_client_socket(const char *hostname,
         return CLIENT_SOCK_ERROR;
     }
 
-    LOG_DEBUG("client connecting to: %s", 
+    LOG_DEBUG("Client connecting to: %s", 
         get_ip_addr(p->ai_family, p->ai_addr).c_str());
 
     freeaddrinfo(server_info);

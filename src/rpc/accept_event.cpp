@@ -4,6 +4,7 @@
 #include "rpc/socket_event.hpp"
 #include "event/event_loop.hpp"
 #include "utils/debug.hpp"
+#include "utils/network_utils.hpp"
 #include "rpc/rpc_responder.hpp"
 
 Acceptor::Acceptor(EventLoop& loop, int listen_sock, RpcResponder& responder): 
@@ -26,6 +27,8 @@ void Acceptor::handle_event(uint32_t events) {
             LOG_ERROR("accept failed: %s", strerror(errno));
             return;
         } else {
+            LOG_DEBUG("New connection from %s", get_peer_ip(client_sock).c_str());
+
             std::shared_ptr<Socket> socket_event = 
                 std::make_shared<Socket>(loop_, client_sock, responder_);
             loop_.addEvent(std::move(socket_event), EPOLLIN | EPOLLONESHOT);

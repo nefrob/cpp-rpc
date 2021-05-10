@@ -44,7 +44,11 @@ int main(int argc, char *argv[]) {
 
         msg.len = request.length();
         msg.data = (void *) request.c_str();
-        ssize_t n = send_all(client_sock, &msg, sizeof(msg.len) + msg.len);
+
+        ssize_t n = send_all(client_sock, &msg.len, sizeof(msg.len));
+        assert(n == sizeof(msg.len));
+        
+        n = send_all(client_sock, msg.data, msg.len);
         assert(n == request.length());
         
         n = recv_all(client_sock, &msg.len, sizeof(msg.len));
@@ -54,7 +58,7 @@ int main(int argc, char *argv[]) {
         n = recv_all(client_sock, &response, msg.len);
         assert(n == msg.len);
 
-        printf("response: %s", (char *) response);
+        LOG_DEBUG("response: %s", (char *) response);
     }
 
     LOG_DEBUG("Stopping client ...");

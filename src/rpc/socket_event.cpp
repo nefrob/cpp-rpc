@@ -1,3 +1,4 @@
+#include <stdlib.h> 
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include "rpc/socket_event.hpp"
@@ -80,7 +81,7 @@ bool Socket::handleReadable() {
     while (true) {
         if (recv_offset_ == 0) {
             recv_msg_ = (struct message *) malloc(sizeof(struct message *));
-            if (recv_msg_->data == NULL) PANIC("malloc fail");
+            if (recv_msg_ == NULL) PANIC("malloc fail");
 
             recv_msg_->data = NULL;
         }
@@ -112,7 +113,7 @@ bool Socket::handleReadable() {
 
         recv_offset_ += ret;
         if (msg_offset + ret == recv_msg_->len) {
-            LOG_DEBUG("message received from %s", get_peer_ip(fd()).c_str());
+            LOG_DEBUG("Message received from %s", get_peer_ip(fd()).c_str());
 
             responder_.scheduleRpcRequest(weak_from_this(), recv_msg_);
 
@@ -159,7 +160,7 @@ bool Socket::handleWriteable() {
         send_offset_ += ret;
         
         if (msg_offset + ret == send_msg_->len) {
-            LOG_DEBUG("message sent to peer %s", get_peer_ip(fd()).c_str());
+            LOG_DEBUG("Message sent to peer %s", get_peer_ip(fd()).c_str());
 
             free(send_msg_->data);
             send_msg_ = NULL;

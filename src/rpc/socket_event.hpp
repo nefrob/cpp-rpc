@@ -18,7 +18,7 @@ class RpcResponder;
 /**
  * Network socket event loop event.
  */
-class Socket: public Event, std::enable_shared_from_this<Socket> {
+class Socket: public Event, public std::enable_shared_from_this<Socket> {
     public:
         /**
          * EPOLLIN | EPOLLONESHOT
