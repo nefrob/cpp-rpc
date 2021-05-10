@@ -1,5 +1,7 @@
 /**
  * This client is for testing purposes only right now.
+ * 
+ * Client uses blocking sockets for send/recv/connect.
  */
 
 #include <iostream>

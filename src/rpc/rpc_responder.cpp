@@ -26,7 +26,7 @@ void RpcResponder::handleRpcRequest(std::weak_ptr<Socket> socket, struct message
 
     loop_.runInLoop([socket, response]() {
         if (auto spSocket = socket.lock()) {
-            spSocket->queue_message(response->data, response->len);
+            spSocket->queueMessage(response->data, response->len);
         }
         
         free(response->data);

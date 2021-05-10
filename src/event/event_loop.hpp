@@ -100,7 +100,7 @@ class EventLoop {
         int epollfd_;
 
         /* Events managed by event loop. */
-        std::unordered_map<int, std::shared_ptr<Event>> handled_events;
+        std::unordered_map<int, std::shared_ptr<Event>> registered_events_;
 
         /* Pending functions to run within event loop. */
         std::queue<Thunk> pending_thunks_;

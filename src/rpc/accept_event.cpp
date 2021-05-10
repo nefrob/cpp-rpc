@@ -12,7 +12,7 @@ Acceptor::Acceptor(EventLoop& loop, int listen_sock, RpcResponder& responder):
 
 Acceptor::~Acceptor() { } // handled by Event::~Event()
 
-void Acceptor::handle_event(uint32_t events) {
+void Acceptor::handleEvent(uint32_t events) {
     struct sockaddr_storage client_addr;
     socklen_t addr_len = sizeof(client_addr);
     int client_sock;

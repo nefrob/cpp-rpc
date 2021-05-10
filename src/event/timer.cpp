@@ -29,7 +29,7 @@ void Timer::deschedule() {
         PANIC("timerfd_settime failed to deschedule: %s", strerror(errno));
 }
 
-void Timer::handle_event(uint32_t events) {
+void Timer::handleEvent(uint32_t events) {
     timer_callback_(events);
 }
 

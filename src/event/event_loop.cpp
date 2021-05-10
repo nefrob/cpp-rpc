@@ -39,7 +39,7 @@ void EventLoop::run() {
         }
 
         for (int i = 0; i < n_events; i++) {
-            ((Event *) events[i].data.ptr)->handle_event(events[i].events);
+            ((Event *) events[i].data.ptr)->handleEvent(events[i].events);
         }
 
         doPendingThunks();
@@ -119,7 +119,7 @@ void EventLoop::doPendingThunks() {
 void EventLoop::epollAdd(std::shared_ptr<Event> event, uint32_t events) {
     assert(event != nullptr);
 
-    if (handled_events.find(event->fd()) != handled_events.end()) {
+    if (registered_events_.find(event->fd()) != registered_events_.end()) {
         LOG_WARN("Event already registered for fd %d", event->fd());
         return;
     }
@@ -135,13 +135,13 @@ void EventLoop::epollAdd(std::shared_ptr<Event> event, uint32_t events) {
             event->fd(), strerror(errno));
     }
 
-    handled_events.insert(std::make_pair(event->fd(), std::move(event)));
+    registered_events_.insert(std::make_pair(event->fd(), std::move(event)));
 }
 
 void EventLoop::epollDel(Event *event) {
     assert(event != nullptr);
 
-    if (handled_events.find(event->fd()) == handled_events.end()) {
+    if (registered_events_.find(event->fd()) == registered_events_.end()) {
         LOG_WARN("Event not registered for fd %d", event->fd());
         return;
     }
@@ -154,13 +154,13 @@ void EventLoop::epollDel(Event *event) {
     }
 
     event->handleDeregister();
-    handled_events.erase(event->fd());
+    registered_events_.erase(event->fd());
 }
 
 void EventLoop::epollMod(Event *event, uint32_t events) {
     assert(event != nullptr);
 
-    if (handled_events.find(event->fd()) == handled_events.end()) {
+    if (registered_events_.find(event->fd()) == registered_events_.end()) {
         LOG_WARN("Event not registered for fd %d", event->fd());
         return;
     }

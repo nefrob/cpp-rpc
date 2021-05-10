@@ -39,14 +39,14 @@ class Socket: public Event, public std::enable_shared_from_this<Socket> {
          * @param data: buffer of data to send.
          * @param len: length of data in bytes to copy from `data`.
          */
-        void queue_message(const void *data, size_t len);
+        void queueMessage(const void *data, size_t len);
 
         /**
          * 
          *
          * @param events: epoll set event flags.
          */
-        void handle_event(uint32_t events);
+        void handleEvent(uint32_t events);
 
     private:
         /* Called by handleEvent when epoll returns a read event on sockfd. 

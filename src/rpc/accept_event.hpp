@@ -32,7 +32,7 @@ class Acceptor: public Event {
          *
          * @param: epoll set event flags.
          */
-        void handle_event(uint32_t events);
+        void handleEvent(uint32_t events);
 
     private:
         /* */

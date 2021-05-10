@@ -42,7 +42,7 @@ class Event {
          * 
          * @param events: epoll set event flags.
          */
-        virtual void handle_event(uint32_t events) = 0;
+        virtual void handleEvent(uint32_t events) = 0;
 
         /**
          * Called right before event is deregistered from the event loop. 
@@ -54,7 +54,7 @@ class Event {
         /**
          * Epoll-based event loop that fd is registered with.
          */
-        EventLoop& loop_;
+        EventLoop& loop_; // TODO: const?
 
     private:
         /* File descriptor being monitored. */

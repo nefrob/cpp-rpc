@@ -35,7 +35,7 @@ Socket::~Socket() {
     }
 }
 
-void Socket::queue_message(const void *data, size_t len) {
+void Socket::queueMessage(const void *data, size_t len) {
     assert(data != NULL);
     assert(len != 0);
 
@@ -54,7 +54,7 @@ void Socket::queue_message(const void *data, size_t len) {
     });
 }
 
-void Socket::handle_event(uint32_t events) {
+void Socket::handleEvent(uint32_t events) {
     if ((events & EPOLLERR) || (events & EPOLLHUP)) {
         loop_.removeEvent(this);
         return;
