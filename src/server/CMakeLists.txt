@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 project(server)
 
 # src server ...
-include_directories(.. . ../utils ../event)
+include_directories(.. . ../utils ../event ../rpc)
 
 # Project files
 
@@ -32,12 +32,7 @@ set(RPC_SRC
     ../rpc/rpc_responder.hpp            ../rpc/rpc_responder.cpp 
 )
 
-set(CONCURRENCY_SRC
-    ../concurrency/semaphore.hpp        ../concurrency/semaphore.cpp
-    ../concurrency/threadpool.hpp       ../concurrency/threadpool.cpp
-)
-
-add_executable(${PROJECT_NAME} ${SERVER_SRC} ${UTILS_SRC} ${EVENT_SRC} ${RPC_SRC} ${CONCURRENCY_SRC})
+add_executable(${PROJECT_NAME} ${SERVER_SRC} ${UTILS_SRC} ${EVENT_SRC} ${RPC_SRC})
 
 # For std::thread
 target_link_libraries(${PROJECT_NAME} pthread)

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 project(client)
 
 # src client ...
-include_directories(.. . ../utils ../event)
+include_directories(.. . ../utils ../event ../rpc)
 
 # Project files
 

@@ -7,6 +7,5 @@ build/*
 # Editor settings 
 .vscode/*
 
-# Don't commit semaphore and threadpool classes since
-# they are sourced from Stanford CS 110 assignments
-src/concurrency/*
+# Working notes
+TODO.md
