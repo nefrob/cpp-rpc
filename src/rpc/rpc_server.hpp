@@ -12,8 +12,6 @@
 /**
  * RPC server that handles incoming RPC requests, getting the
  * respective response and returning it to the client. 
- * 
- * TODO: not thread safe
  */
 class RpcServer {
     public: 
@@ -43,9 +41,9 @@ class RpcServer {
         /* Server event loop for network events. */
         EventLoop loop_;
 
-        /* */
+        /* Server running status. */
         bool running_;
 
-        // TODO: some kind of rpc responder service
+        /* Async RPC response generator and queuer. */
         RpcResponder rpc_responder_;
 };

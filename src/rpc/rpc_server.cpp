@@ -37,7 +37,7 @@ void RpcServer::stop() {
         get_host_name().c_str(), port_);
 
     // FIXME: event shared pointers go out of scope when loop is stopped
-    // so will be automatically closed down
+    // so will be automatically closed down?
     loop_.stop();
 
     running_ = false;

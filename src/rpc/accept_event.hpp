@@ -1,7 +1,8 @@
 /**
  * File: accept_event.hpp
  * ----------------------
- * TODO:
+ * Defines an accept socket event to be used with epoll-based
+ * event loops.
  */
 
 #pragma once
@@ -12,13 +13,17 @@ class EventLoop;
 class RpcResponder;
 
 /**
- * Acceptor event loop event.
+ * Accept socket event loop event.
  */
 class Acceptor: public Event {
     public:
 
         /**
-         * EPOLLIN
+         * Constructs socket handler for use with epoll event loop.
+         * 
+         * @param loop: loop socket is associated with.
+         * @param listen_sock: server socket to listen for events on.
+         * @param responder: RPC async response build/queue. FIXME: name
          */
         Acceptor(EventLoop& loop, int listen_sock, RpcResponder& responder);
 
@@ -28,14 +33,15 @@ class Acceptor: public Event {
         ~Acceptor();
 
         /**
-         * 
+         * Handles socket read events.
          *
          * @param: epoll set event flags.
          */
         void handleEvent(uint32_t events);
 
     private:
-        /* */
+        /* Async RPC response generator provided to new
+           connections. */
         RpcResponder& responder_;
 
         /* Set non-construction and assignment copyable. */

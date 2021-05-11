@@ -1,7 +1,7 @@
 /**
  * File: socket_event.hpp
  * ----------------------
- * TODO:
+ * Defines a socket event to be used with epoll-based event loops.
  */
 
 #pragma once
@@ -21,10 +21,11 @@ class RpcResponder;
 class Socket: public Event, public std::enable_shared_from_this<Socket> {
     public:
         /**
-         * EPOLLIN | EPOLLONESHOT
+         * Constructs socket handler for use with epoll event loop.
          * 
-         * @param loop:
-         * @param sockfd: 
+         * @param loop: loop socket is associated with.
+         * @param sockfd: socket file descriptor to handle.
+         * @param responder: RPC async response build/queue. FIXME: name
          */
         Socket(EventLoop& loop, int sockfd, RpcResponder& responder);
 
@@ -42,7 +43,7 @@ class Socket: public Event, public std::enable_shared_from_this<Socket> {
         void queueMessage(const void *data, size_t len);
 
         /**
-         * 
+         * Handles socket read/write events.
          *
          * @param events: epoll set event flags.
          */
@@ -72,7 +73,7 @@ class Socket: public Event, public std::enable_shared_from_this<Socket> {
         /* Offset of already received bytes into active receive message. */
         size_t recv_offset_;
 
-        /* */
+        /* Async RPC response generator. */
         RpcResponder& responder_;
 
         /* Set non-construction and assignment copyable. */
