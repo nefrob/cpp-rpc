@@ -36,8 +36,7 @@ void RpcServer::stop() {
     LOG_DEBUG("RPC server %s:%hu shutting down ...",
         get_host_name().c_str(), port_);
 
-    // FIXME: event shared pointers go out of scope when loop is stopped
-    // so will be automatically closed down?
+    rpc_responder_.stop();
     loop_.stop();
 
     running_ = false;

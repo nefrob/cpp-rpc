@@ -64,6 +64,8 @@ void EventLoop::stop() {
     lock_.unlock();
 
     loop_thread_.join();
+
+    registered_events_.clear();
     close_log_err(epollfd_);
 }
 

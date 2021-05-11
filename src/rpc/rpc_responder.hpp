@@ -20,6 +20,8 @@ class EventLoop;
 
 /**
  * Response manager.
+ * 
+ * FIXME: maybe rename to RpcRequestHandler
  */
 class RpcResponder {
     public:
@@ -40,6 +42,13 @@ class RpcResponder {
          * Deconstructor, waits on pending requests to be serviced.
          */
         ~RpcResponder();
+
+        /**
+         * Waits for pending requests to complete and joins worker threads.
+         * 
+         * TODO: disable accepting new requests
+         */
+        void stop();
 
         /**
          * Queues an RPC request to asynchronously build a response and 

@@ -7,11 +7,19 @@ RpcResponder::RpcResponder(EventLoop& loop, GetRpcResponse getResponse):
     worker_pool_(WORKER_THREADS), loop_(loop), getResponse_(getResponse) { }
 
 RpcResponder::~RpcResponder() { 
+    stop();
+}
+
+void RpcResponder::stop() {
+    // TODO: if already said stop then don't do anything
+
     worker_pool_.wait();
 }
 
 void RpcResponder::scheduleRpcRequest(std::weak_ptr<Socket> socket, struct message *request) {
     assert(request != nullptr);
+
+    // TODO: is stop called then disable queueing new requests
 
     worker_pool_.schedule([this, socket, request]() {
         handleRpcRequest(socket, request);

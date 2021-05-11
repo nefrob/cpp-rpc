@@ -21,7 +21,7 @@ Socket::~Socket() {
         free(send_msg_);
     }
 
-    if (recv_msg_->data != NULL) {
+    if (recv_msg_ != NULL) {
         if (recv_msg_->data != NULL) free(recv_msg_->data);
         free(recv_msg_);
     }
@@ -42,10 +42,10 @@ void Socket::queueMessage(const void *data, size_t len) {
     struct message *msg = (struct message *) malloc(sizeof(struct message));
     if (msg == NULL) PANIC("malloc fail");
 
+    msg->len = len;
     msg->data = malloc(msg->len);
     if (msg->data == NULL) PANIC("malloc fail");
 
-    msg->len = len;
     memcpy(msg->data, data, msg->len);
 
     loop_.runInLoop([this, msg]() {
@@ -79,8 +79,8 @@ bool Socket::handleReadable() {
     ssize_t ret;
 
     while (true) {
-        if (recv_offset_ == 0) {
-            recv_msg_ = (struct message *) malloc(sizeof(struct message *));
+        if (recv_msg_ == NULL) {
+            recv_msg_ = (struct message *) malloc(sizeof(struct message));
             if (recv_msg_ == NULL) PANIC("malloc fail");
 
             recv_msg_->data = NULL;
@@ -163,6 +163,7 @@ bool Socket::handleWriteable() {
             LOG_DEBUG("Message sent to peer %s", get_peer_ip(fd()).c_str());
 
             free(send_msg_->data);
+            free(send_msg_);
             send_msg_ = NULL;
             send_offset_ = 0;
         } else break;
