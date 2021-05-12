@@ -30,6 +30,7 @@ void Timer::deschedule() {
 }
 
 void Timer::handleEvent(uint32_t events) {
+    assert(loop_.inLoopThread());
     timer_callback_(events);
 }
 

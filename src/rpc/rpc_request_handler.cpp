@@ -7,6 +7,7 @@ RpcRequestHandler::~RpcRequestHandler() { }
 
 void RpcRequestHandler::handleMessage(std::weak_ptr<Socket> socket, 
     struct message *request) {
+    // assert(loop_.inLoopThread());
     assert(!socket.expired());
     assert(request != NULL);
     

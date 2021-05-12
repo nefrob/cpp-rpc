@@ -13,6 +13,8 @@ Acceptor::Acceptor(EventLoop& loop, int listen_sock,
 Acceptor::~Acceptor() { } // handled by Event::~Event()
 
 void Acceptor::handleEvent(uint32_t events) {
+    assert(loop_.inLoopThread());
+
     struct sockaddr_storage client_addr;
     socklen_t addr_len = sizeof(client_addr);
     int client_sock;

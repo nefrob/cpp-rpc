@@ -35,7 +35,8 @@ class Socket: public Event, public std::enable_shared_from_this<Socket> {
         ~Socket();
 
         /**
-         * Queues a new message to be sent on the socket.
+         * Queues a new message to be sent on the socket. Should only
+         * be called from the event loop.
          * 
          * @param data: buffer of data to send.
          * @param len: length of data in bytes to copy from `data`.

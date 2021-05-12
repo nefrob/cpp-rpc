@@ -34,9 +34,9 @@ class EventLoop {
         ~EventLoop();
 
         /**
-         * Stops event loop running.
+         * Stops event loop running and clears events.
          * 
-         * FIXME: deregister all events?
+         * FIXME: clears all events on stop. Maybe should deregister all?
          */
         void stop();
 
@@ -74,12 +74,14 @@ class EventLoop {
         */
         void runInLoop(Thunk thunk);
 
+        /**
+         * Returns whether the current thread is the loop thread.
+         */
+        bool inLoopThread();
+
     private:
         /* Starts the event loop waiting on events. */
         void run();
-
-        /* Returns whether the current thread is the loop thread. */
-        bool inLoopThread();
 
         /* Executes pending thunks in the event loop. */
         void doPendingThunks();

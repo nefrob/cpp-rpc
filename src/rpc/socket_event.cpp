@@ -37,6 +37,7 @@ Socket::~Socket() {
 }
 
 void Socket::queueMessage(const void *data, size_t len) {
+    assert(loop_.inLoopThread());
     assert(data != NULL);
     assert(len != 0);
 
@@ -58,6 +59,8 @@ void Socket::queueMessage(const void *data, size_t len) {
 }
 
 void Socket::handleEvent(uint32_t events) {
+    assert(loop_.inLoopThread());
+
     if ((events & EPOLLERR) || (events & EPOLLHUP)) {
         loop_.removeEvent(this);
         return;
@@ -79,6 +82,8 @@ void Socket::handleEvent(uint32_t events) {
 }
 
 bool Socket::handleReadable() {
+    assert(loop_.inLoopThread());
+
     ssize_t ret;
 
     while (true) {
@@ -129,6 +134,8 @@ bool Socket::handleReadable() {
 }
 
 bool Socket::handleWriteable() {
+    assert(loop_.inLoopThread());
+    
     ssize_t ret;
 
     while (true) {
