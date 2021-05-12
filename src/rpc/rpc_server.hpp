@@ -7,7 +7,7 @@
 #pragma once
 #include <string>
 #include "event/event_loop.hpp"
-#include "rpc/rpc_responder.hpp"
+#include "rpc/rpc_request_handler.hpp"
 
 /**
  * RPC server that handles incoming RPC requests, getting the
@@ -45,5 +45,5 @@ class RpcServer {
         bool running_;
 
         /* Async RPC response generator and queuer. */
-        RpcResponder rpc_responder_;
+        RpcRequestHandler rpc_handler_;
 };

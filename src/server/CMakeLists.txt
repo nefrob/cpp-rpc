@@ -28,8 +28,9 @@ set(RPC_SRC
     ../rpc/server_socket.hpp            ../rpc/server_socket.cpp
     ../rpc/accept_event.hpp             ../rpc/accept_event.cpp
     ../rpc/socket_event.hpp             ../rpc/socket_event.cpp
+    ../rpc/socket_msg_handler.hpp       
+    ../rpc/rpc_request_handler.hpp      ../rpc/rpc_request_handler.cpp 
     ../rpc/rpc_server.hpp               ../rpc/rpc_server.cpp 
-    ../rpc/rpc_responder.hpp            ../rpc/rpc_responder.cpp 
 )
 
 add_executable(${PROJECT_NAME} ${SERVER_SRC} ${UTILS_SRC} ${EVENT_SRC} ${RPC_SRC})

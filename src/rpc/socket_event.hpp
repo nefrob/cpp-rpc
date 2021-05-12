@@ -13,7 +13,7 @@
 
 /* Forward declarations (stop cyclic dependencies). */
 class EventLoop;
-class RpcResponder;
+class SocketMessageHandler;
 
 /**
  * Network socket event loop event.
@@ -25,9 +25,9 @@ class Socket: public Event, public std::enable_shared_from_this<Socket> {
          * 
          * @param loop: loop socket is associated with.
          * @param sockfd: socket file descriptor to handle.
-         * @param responder: RPC async response build/queue. FIXME: name
+         * @param msg_handler: incoming message handler.
          */
-        Socket(EventLoop& loop, int sockfd, RpcResponder& responder);
+        Socket(EventLoop& loop, int sockfd, SocketMessageHandler& msg_handler);
 
         /**
          * Deconstructor.
@@ -73,8 +73,8 @@ class Socket: public Event, public std::enable_shared_from_this<Socket> {
         /* Offset of already received bytes into active receive message. */
         size_t recv_offset_;
 
-        /* Async RPC response generator. */
-        RpcResponder& responder_;
+        /* Incoming message handler. */
+        SocketMessageHandler& msg_handler_;
 
         /* Set non-construction and assignment copyable. */
         Socket(const Socket&) = delete;

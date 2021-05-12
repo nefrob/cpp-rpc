@@ -2,15 +2,16 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include "rpc/socket_event.hpp"
+#include "rpc/socket_msg_handler.hpp"
 #include "event/event_loop.hpp"
 #include "utils/network_utils.hpp"
 #include "utils/debug.hpp"
-#include "rpc/rpc_responder.hpp"
 
-Socket::Socket(EventLoop& loop, int sockfd, RpcResponder& responder): 
+Socket::Socket(EventLoop& loop, int sockfd, 
+    SocketMessageHandler& msg_handler): 
     Event(loop, sockfd),
     send_msg_(NULL), send_offset_(0), recv_offset_(0), recv_msg_(NULL),
-    responder_(responder) {
+    msg_handler_(msg_handler) {
 }
 
 Socket::~Socket() {
@@ -47,6 +48,8 @@ void Socket::queueMessage(const void *data, size_t len) {
     if (msg->data == NULL) PANIC("malloc fail");
 
     memcpy(msg->data, data, msg->len);
+
+    // TODO:
 
     loop_.runInLoop([this, msg]() {
         pending_msgs_.push(msg);
@@ -115,7 +118,7 @@ bool Socket::handleReadable() {
         if (msg_offset + ret == recv_msg_->len) {
             LOG_DEBUG("Message received from %s", get_peer_ip(fd()).c_str());
 
-            responder_.scheduleRpcRequest(weak_from_this(), recv_msg_);
+            msg_handler_.handleMessage(weak_from_this(), recv_msg_);
 
             recv_offset_ = 0;
             recv_msg_ = NULL;

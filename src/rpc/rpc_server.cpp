@@ -13,14 +13,14 @@ static struct message *echo_response(struct message *request) {
 
 RpcServer::RpcServer(uint16_t port, std::string ip):
     port_(port), ip_(ip), loop_(), running_(true),
-    rpc_responder_(loop_, echo_response) {
+    rpc_handler_() {
 
     int listen_sock = create_server_socket(port, ip_.c_str(), DEFAULT_BACKLOG, false);
     if (listen_sock == SERVER_SOCK_ERROR) 
         PANIC("listen socket create failed");
 
     std::shared_ptr<Acceptor> server_sock = 
-        std::make_shared<Acceptor>(loop_, listen_sock, rpc_responder_);
+        std::make_shared<Acceptor>(loop_, listen_sock, rpc_handler_);
     loop_.addEvent(std::move(server_sock), EPOLLIN);
 
     LOG_DEBUG("RPC server accepting on port: %hu", port);
@@ -36,7 +36,6 @@ void RpcServer::stop() {
     LOG_DEBUG("RPC server %s:%hu shutting down ...",
         get_host_name().c_str(), port_);
 
-    rpc_responder_.stop();
     loop_.stop();
 
     running_ = false;

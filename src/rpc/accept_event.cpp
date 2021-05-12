@@ -5,10 +5,10 @@
 #include "event/event_loop.hpp"
 #include "utils/debug.hpp"
 #include "utils/network_utils.hpp"
-#include "rpc/rpc_responder.hpp"
 
-Acceptor::Acceptor(EventLoop& loop, int listen_sock, RpcResponder& responder): 
-    Event(loop, listen_sock), responder_(responder) { }
+Acceptor::Acceptor(EventLoop& loop, int listen_sock, 
+    SocketMessageHandler& msg_handler): 
+    Event(loop, listen_sock), msg_handler_(msg_handler) { }
 
 Acceptor::~Acceptor() { } // handled by Event::~Event()
 
@@ -30,7 +30,7 @@ void Acceptor::handleEvent(uint32_t events) {
             LOG_DEBUG("New connection from %s", get_peer_ip(client_sock).c_str());
 
             std::shared_ptr<Socket> socket_event = 
-                std::make_shared<Socket>(loop_, client_sock, responder_);
+                std::make_shared<Socket>(loop_, client_sock, msg_handler_);
             loop_.addEvent(std::move(socket_event), EPOLLIN | EPOLLONESHOT);
         }
     }
