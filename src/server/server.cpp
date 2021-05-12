@@ -2,40 +2,38 @@
  * This server is for testing purposes only right now.
  */
 
-#include <sys/epoll.h>
 #include <iostream>
 #include "utils/debug.hpp"
-#include "event/event_loop.hpp"
-#include "event/timer.hpp"
+#include "utils/network_utils.hpp"
+#include "rpc/rpc_server.hpp"
 
 int main(int argc, char *argv[]) {
+    if (argc < 3) {
+        fprintf(stderr, "Server usage: %s ip port\n", argv[0]);
+        exit(1);
+    }
+
     LOG_DEBUG("Starting server ...");
+    LOG_DEBUG("Server hostname is %s", get_host_name().c_str());
 
-    EventLoop loop;
-    Timer *timer = new Timer(loop, [](uint32_t) {
-        LOG_DEBUG("Test timer triggered.");
-    });
+    std::string ip = std::string(argv[1]);
+    unsigned short port = atoi(argv[2]);
 
-    loop.addEvent(timer, EPOLLIN | EPOLLONESHOT);
+    RpcServer server(port, ip);
 
     while (true) {
-        std::string request;
+        std::string input;
         printf("server >");
-        std::getline(std::cin, request);
+        std::getline(std::cin, input);
 
-        if (request == "s") {
-            loop.removeEvent(timer);
+        if (input == "s") {
             break;
-        } else if (request == "r") {
-            loop.updateEvent(timer, EPOLLIN | EPOLLONESHOT);
-            timer->schedule(2000000000); // schedule 2 second timer
-        } else if (request == "d") {
-            loop.removeEvent(timer);
         }
+
     }
 
     LOG_DEBUG("Stopping server ...");
-    loop.stop();
+    server.stop();
 
     return 0;
 }

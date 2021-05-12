@@ -19,8 +19,17 @@ cd cpp-rpc
 mkdir build && cd build
 cmake .. && make
 cd ../bin
-./server -TODO: args
-./client -TODO: args
+./server listen_ip listen_port
+./client server_ip server_port
+```
+
+### Example
+
+```
+./server 127.0.0.1 2000
+./client 127.0.0.1 2000
+
+TODO:
 ```
 
 ### Questions?

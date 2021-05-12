@@ -6,3 +6,6 @@ build/*
 
 # Editor settings 
 .vscode/*
+
+# Working notes
+TODO.md

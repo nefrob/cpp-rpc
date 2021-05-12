@@ -42,19 +42,19 @@ class Event {
          * 
          * @param events: epoll set event flags.
          */
-        virtual void handle_event(uint32_t events) = 0;
+        virtual void handleEvent(uint32_t events) = 0;
 
         /**
-         * Abstract method called when event is deregistered from the
-         * event loop. Can be used to free event memory.
+         * Called right before event is deregistered from the event loop. 
+         * Should be overriden by derived class.
          */
-        virtual void handle_deregister() = 0;
+        void handleDeregister() { }
 
     protected:
         /**
          * Epoll-based event loop that fd is registered with.
          */
-        const EventLoop& loop_;
+        EventLoop& loop_;
 
     private:
         /* File descriptor being monitored. */

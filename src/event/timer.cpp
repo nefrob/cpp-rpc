@@ -29,12 +29,9 @@ void Timer::deschedule() {
         PANIC("timerfd_settime failed to deschedule: %s", strerror(errno));
 }
 
-void Timer::handle_event(uint32_t events) {
+void Timer::handleEvent(uint32_t events) {
+    assert(loop_.inLoopThread());
     timer_callback_(events);
-}
-
-void Timer::handle_deregister() {
-    delete this;
 }
 
 /* Creates new non-blocking timer file descriptor. */

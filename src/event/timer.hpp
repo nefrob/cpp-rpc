@@ -56,12 +56,7 @@ class Timer: public Event {
          *
          * @param: epoll set event flags.
          */
-        void handle_event(uint32_t events);
-
-        /**
-         * Frees timer memory (assumes allocated with "new").
-         */
-        void handle_deregister();
+        void handleEvent(uint32_t events);
 
     private:
         /* Nanoseconds in a second. */

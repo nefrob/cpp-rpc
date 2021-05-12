@@ -7,7 +7,7 @@
 #pragma once
 #include <mutex>
 #include <thread>
-#include <unordered_set>
+#include <unordered_map>
 #include <queue>
 #include <functional>
 #include "event/event.hpp"
@@ -34,21 +34,19 @@ class EventLoop {
         ~EventLoop();
 
         /**
-         * Stops event loop running.
+         * Stops event loop running and clears events.
+         * 
+         * FIXME: clears all events on stop. Maybe should deregister all?
          */
         void stop();
 
         /**
-         * Registers event with epoll and event loop. Event pointer
-         * stored in event loop so its lifetime should reflect this.
-         * 
-         * FIXME: could use a unique pointer with move to reflect 
-         * ownership, but thunks are copyable making queue addEvent funky.
+         * Registers event with epoll and event loop.
          * 
          * @param event: event being registered.
          * @param events: epoll events flags to register with.
          */
-        void addEvent(Event *event, uint32_t events);
+        void addEvent(std::shared_ptr<Event> event, uint32_t events);
 
         /**
          * Deregisters event from epoll and deletes event. Useful
@@ -68,22 +66,28 @@ class EventLoop {
          */
         void updateEvent(Event *event, uint32_t events);
 
+        /**
+         * Runs provided thunk in event loop. If not currently 
+         * in event loop then thunk is queued. 
+         * 
+         * @param thunk: function to queue.
+        */
+        void runInLoop(Thunk thunk);
+
+        /**
+         * Returns whether the current thread is the loop thread.
+         */
+        bool inLoopThread();
+
     private:
         /* Starts the event loop waiting on events. */
         void run();
 
-        /* Returns whether the current thread is the loop thread. */
-        bool inLoopThread();
-
-        /* Runs provided thunk in event loop. If not currently
-           in event loop then thunk is queued. */
-        void runInLoop(Thunk thunk);
-
         /* Executes pending thunks in the event loop. */
         void doPendingThunks();
 
-        /* Adds event to epoll and store pointer. */
-        void epollAdd(Event *event, uint32_t events);
+        /* Adds event to epoll and stores pointer. */
+        void epollAdd(std::shared_ptr<Event> event, uint32_t events);
 
         /* Deletes event from epoll and deletes pointer (and so object too). */
         void epollDel(Event *event);
@@ -98,14 +102,14 @@ class EventLoop {
         int epollfd_;
 
         /* Events managed by event loop. */
-        std::unordered_set<Event *> handled_events;
+        std::unordered_map<int, std::shared_ptr<Event>> registered_events_;
 
         /* Pending functions to run within event loop. */
         std::queue<Thunk> pending_thunks_;
 
         /* Timer to force event loop thread wakeup 
            (for scheduling thunks or ensuring event loop exits). */
-        Timer *wakeup_timer_;
+        std::shared_ptr<Timer> wakeup_timer_;
 
         /* Thread event loop runs on. */
         std::thread loop_thread_;
