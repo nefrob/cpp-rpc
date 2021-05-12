@@ -10,6 +10,9 @@
 #include "rpc/socket_event.hpp"
 #include "rpc/socket_msg_handler.hpp"
 
+/* Forward declarations (stop cyclic dependencies). */
+class EventLoop;
+
 /**
  * RPC request handler.
  */
@@ -17,8 +20,10 @@ class RpcRequestHandler: public SocketMessageHandler {
     public:
         /**
          * Constructs request handler.
+         * 
+         * @param loop: server event loop.
          */
-        RpcRequestHandler();
+        RpcRequestHandler(EventLoop& loop);
 
         /**
          * Deconstructor.
@@ -34,4 +39,8 @@ class RpcRequestHandler: public SocketMessageHandler {
          */
         void handleMessage(std::weak_ptr<Socket> socket, 
             struct message *request);
+
+    private:
+        /* Loop to schedule message queuing for sockets. */
+        EventLoop& loop_;
 };

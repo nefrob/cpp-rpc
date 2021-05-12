@@ -13,7 +13,7 @@ static struct message *echo_response(struct message *request) {
 
 RpcServer::RpcServer(uint16_t port, std::string ip):
     port_(port), ip_(ip), loop_(), running_(true),
-    rpc_handler_() {
+    rpc_handler_(loop_) {
 
     int listen_sock = create_server_socket(port, ip_.c_str(), DEFAULT_BACKLOG, false);
     if (listen_sock == SERVER_SOCK_ERROR) 

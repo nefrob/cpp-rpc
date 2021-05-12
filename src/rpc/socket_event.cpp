@@ -50,12 +50,8 @@ void Socket::queueMessage(const void *data, size_t len) {
 
     memcpy(msg->data, data, msg->len);
 
-    // TODO:
-
-    loop_.runInLoop([this, msg]() {
-        pending_msgs_.push(msg);
-        loop_.updateEvent(this, EPOLLOUT | EPOLLIN | EPOLLONESHOT);
-    });
+    pending_msgs_.push(msg);
+    loop_.updateEvent(this, EPOLLOUT | EPOLLIN | EPOLLONESHOT);
 }
 
 void Socket::handleEvent(uint32_t events) {
