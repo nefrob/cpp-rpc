@@ -1,0 +1,27 @@
+/**
+ * File: rpc.proto
+ * ---------------
+ * TODO:
+ */
+
+syntax = "proto3";
+ 
+message EchoRequest {
+     string message = 1;
+ }
+
+ message EchoResponse {
+     string message = 1;
+ }
+ 
+message AddRequest {
+    repeated int32 numbers = 1;
+}
+ 
+message AddResponse {
+    int32 sum = 1;
+}
+ 
+ message ErrorResponse {
+     string error = 1;
+ }

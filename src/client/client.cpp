@@ -5,6 +5,7 @@
  */
 
 #include <iostream>
+#include <google/protobuf/stubs/common.h>
 #include <sys/socket.h>
 #include "utils/debug.hpp"
 #include "utils/utils.hpp"
@@ -17,6 +18,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Client usage: %s hostname port\n", argv[0]);
         exit(1);
     }
+
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     LOG_DEBUG("Starting client ...");
 
@@ -64,6 +67,8 @@ int main(int argc, char *argv[]) {
     }
 
     LOG_DEBUG("Stopping client ...");
+
+    google::protobuf::ShutdownProtobufLibrary();
 
     return 0;
 }
