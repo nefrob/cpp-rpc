@@ -1,7 +1,6 @@
 /**
- * This client is for testing purposes only right now.
- * 
- * Client uses blocking sockets for send/recv/connect.
+ * This client is for testing purposes. It uses blocking 
+ * sockets for send/recv/connect unlike the RPC server.
  */
 
 #include <iostream>

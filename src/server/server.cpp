@@ -1,5 +1,5 @@
 /**
- * This server is for testing purposes only right now.
+ * Entry point for hosting an event-based RPC server.
  */
 
 #include <iostream>
