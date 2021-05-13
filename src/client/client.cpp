@@ -1,10 +1,10 @@
 /**
- * This client is for testing purposes only right now.
- * 
- * Client uses blocking sockets for send/recv/connect.
+ * This client is for testing purposes. It uses blocking 
+ * sockets for send/recv/connect unlike the RPC server.
  */
 
 #include <iostream>
+#include <unistd.h>
 #include <google/protobuf/stubs/common.h>
 #include "utils/debug.hpp"
 #include "utils/utils.hpp"
@@ -17,19 +17,48 @@
 /* Static forward declarations. */
 void send_echo_request(int sockfd, std::string& input);
 std::string get_response(int sockfd);
+static void print_usage_help();
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
-        fprintf(stderr, "Client usage: %s hostname port\n", argv[0]);
+    int opt;
+    std::string hostname = "";
+    uint16_t port = 0;
+    std::string log_arg = "SILENT";
+    while ((opt = getopt(argc, argv, "i:p:vh")) != -1) {
+        switch (opt) {
+            case 'i':
+                hostname = optarg;
+                break;
+            case 'p':
+                port = atoi(optarg);
+                break;
+            case 'v':
+                log_arg = "DEBUG";
+                break;
+            case 'h':
+                print_usage_help();
+                break;
+            case '?':
+                printf("unknown option %c\n", optopt);
+                print_usage_help();
+                exit(1);
+        }
+    }
+
+    if (hostname == "" || port == 0) {
+        print_usage_help();
         exit(1);
+    }
+
+    if (log_arg == "DEBUG") {
+        set_log_level(LogLevel::DEBUG);
+    } else {
+        set_log_level(LogLevel::SILENT);
     }
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     LOG_DEBUG("Starting client ...");
-
-    std::string hostname = std::string(argv[1]);
-    unsigned short port = atoi(argv[2]);
 
     int client_sock = create_client_socket(hostname.c_str(), port);
     if (client_sock == CLIENT_SOCK_ERROR) {
@@ -59,7 +88,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
     
-        printf("response: %s\n", get_response(client_sock).c_str());
+        printf("server response: %s\n", get_response(client_sock).c_str());
     }
 
     LOG_DEBUG("Stopping client ...");
@@ -111,4 +140,11 @@ std::string get_response(int sockfd) {
     }
         
     return "Unknown protobuf.";
+}
+
+static void print_usage_help() {
+    printf("Usage: -i server_hostname -p server_port -v -h\n");
+    printf("ex. -i 127.0.0.1 -p 2000\n");
+    printf("-v sets verbose, -h shows this help message");
+    printf("A server hostname and port must be specified");
 }
