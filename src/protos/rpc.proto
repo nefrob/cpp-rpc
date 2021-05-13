@@ -1,0 +1,19 @@
+/**
+ * File: rpc.proto
+ * ---------------
+ * TODO:
+ */
+
+syntax = "proto3";
+ 
+message EchoRequest {
+     string message = 1;
+ }
+
+ message EchoResponse {
+     string message = 1;
+ }
+ 
+ message ErrorResponse {
+     string error = 1;
+ }

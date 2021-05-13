@@ -9,6 +9,7 @@ Project is currently **WIP**!
 ```
 sudo apt-get install cmake
 sudo apt install build-essential
+sudo apt install protobuf-compiler
 ```
 
 ### Setup

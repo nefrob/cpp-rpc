@@ -3,6 +3,7 @@
  */
 
 #include <iostream>
+#include <google/protobuf/stubs/common.h>
 #include "utils/debug.hpp"
 #include "utils/network_utils.hpp"
 #include "rpc/rpc_server.hpp"
@@ -12,6 +13,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Server usage: %s ip port\n", argv[0]);
         exit(1);
     }
+
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     LOG_DEBUG("Starting server ...");
     LOG_DEBUG("Server hostname is %s", get_host_name().c_str());
@@ -34,6 +37,8 @@ int main(int argc, char *argv[]) {
 
     LOG_DEBUG("Stopping server ...");
     server.stop();
+
+    google::protobuf::ShutdownProtobufLibrary();
 
     return 0;
 }
